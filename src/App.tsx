@@ -1,10 +1,10 @@
 import './App.css';
 import { useState, useEffect } from "react";
 
-
-interface Todo {
-  description: string;
-}
+  interface Todo {
+    id: number;
+    description: string;
+  }
 
 function App() {
   const [todoDescription, setTodoDescription] = useState('');
@@ -23,23 +23,27 @@ function App() {
     if (todoList.length > 0) {
       localStorage.setItem('todos', JSON.stringify(todoList));
     }
-  }); // Cerrar el segundo useEffect
+  }, [todoList]); // Cerrar el segundo useEffect
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTodoDescription(e.target.value);
   };
 
   const handleClick = () => {
-    if (todoDescription.trim() === '') return; // Opcional: prevenir elementos vacíos
-
-    const tempTodoList = [...todoList];
+    if (todoDescription.trim() === '') return;
+  
     const newTodo = {
+      id: Date.now(), // id único por timestamp
       description: todoDescription,
     };
+  
+    setTodoList([newTodo, ...todoList]); // Agregar al principio
+    setTodoDescription('');
+  };
 
-    tempTodoList.unshift(newTodo); // Agrega al principio
-    setTodoList(tempTodoList);
-    setTodoDescription(''); // Limpiar input
+  const handleDeleteTodo = (id: number) => {
+    const updatedTodos = todoList.filter(todo => todo.id !== id);
+    setTodoList(updatedTodos);
   };
 
   return (
@@ -54,12 +58,18 @@ function App() {
         <button onClick={handleClick}>Add Item</button>
       </div>
 
-      <div>TODOs Here:</div>
+      <div style={{ marginTop: 20 }}>TODOs Here:</div>
       <ul>
-        {todoList.map((todo, index) => (
-          <li key={index}>
-            <input type="checkbox" />
+        {todoList.map((todo) => (
+          <li key={todo.id} style={{ marginBottom: 5 }}>
+            <input type="checkbox" style={{ marginRight: 10 }} />
             {todo.description}
+            <button
+              onClick={() => handleDeleteTodo(todo.id)}
+              style={{ marginLeft: 10 }}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
