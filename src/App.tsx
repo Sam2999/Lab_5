@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 function App() {
   const [todoDescription, setTodoDescription] = useState('');
   const [todoList, setTodoList] = useState<Todo[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingDescription, setEditingDescription] = useState('');
 
   useEffect(() => {
     const storedTodos = localStorage.getItem('todos');
@@ -46,6 +48,19 @@ function App() {
     setTodoList(updatedTodos);
   };
 
+  const handleUpdateTodo = (id: number) => {
+    const updatedTodos = todoList.map(todo => {
+      if (todo.id === id) {
+        return { ...todo, description: editingDescription };
+      }
+      return todo;
+    });
+  
+    setTodoList(updatedTodos);
+    setEditingId(null);
+    setEditingDescription('');
+  };
+
   return (
     <div style={{ border: '1px solid red', padding: 10 }}>
       <div>
@@ -57,24 +72,62 @@ function App() {
         />
         <button onClick={handleClick}>Add Item</button>
       </div>
-
+  
       <div style={{ marginTop: 20 }}>TODOs Here:</div>
       <ul>
         {todoList.map((todo) => (
           <li key={todo.id} style={{ marginBottom: 5 }}>
             <input type="checkbox" style={{ marginRight: 10 }} />
-            {todo.description}
-            <button
-              onClick={() => handleDeleteTodo(todo.id)}
-              style={{ marginLeft: 10 }}
-            >
-              Delete
-            </button>
+  
+            {editingId === todo.id ? (
+              <>
+                <input
+                  type="text"
+                  value={editingDescription}
+                  onChange={(e) => setEditingDescription(e.target.value)}
+                  style={{ marginRight: 10 }}
+                />
+                <button
+                  onClick={() => handleUpdateTodo(todo.id)}
+                  style={{ marginRight: 5 }}
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingId(null);
+                    setEditingDescription('');
+                  }}
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                {todo.description}
+                <button
+                  onClick={() => {
+                    setEditingId(todo.id);
+                    setEditingDescription(todo.description);
+                  }}
+                  style={{ marginLeft: 10 }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteTodo(todo.id)}
+                  style={{ marginLeft: 5 }}
+                >
+                  Delete
+                </button>
+              </>
+            )}
           </li>
         ))}
       </ul>
     </div>
   );
 }
+
 
 export default App;
